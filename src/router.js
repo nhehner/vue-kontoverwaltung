@@ -1,9 +1,15 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import LoginComponent from "./views/login.vue"
-import SecureComponent from "./views/secure.vue"
+import LoginView from "./views/login.vue"
+import RegisterView from "./views/register.vue"
+import SecureView from "./views/secure.vue"
+import VueFlashMessage from 'vue-flash-message'
+import Buefy from 'buefy'
+import 'buefy/dist/buefy.css'
 
-Vue.use(Router)
+Vue.use(Router);
+Vue.use(VueFlashMessage);
+Vue.use(Buefy);
 
 export default new Router({
     routes: [
@@ -16,12 +22,17 @@ export default new Router({
         {
             path: "/login",
             name: "login",
-            component: LoginComponent
+            component: LoginView, VueFlashMessage
         },
         {
-            path: "/secure",
-            name: "secure",
-            component: SecureComponent
+            path: "/register",
+            name: "registration",
+            component: RegisterView, VueFlashMessage
+        },
+        {
+            path: "/home",
+            name: "home",
+            component: SecureView, VueFlashMessage, Buefy
         }
     ]
 })
