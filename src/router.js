@@ -30,8 +30,8 @@ export default new Router({
             component: RegisterView, VueFlashMessage
         },
         {
-            path: "/home",
-            name: "home",
+            path: "/secure",
+            name: "secure",
             component: SecureView, VueFlashMessage, Buefy
         }
     ]

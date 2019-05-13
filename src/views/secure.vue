@@ -4,13 +4,10 @@
             <flash-message></flash-message>
         </div>
 
-        <div class="wrapper">
-            <div id="formContent">
-                <h1>Secure Area</h1>
-
-                <b-table :data="data" :columns="columns"></b-table>
-                <b-table :data="getGridData()" :columns="getGridColumns()"></b-table>
-            </div>
+        <div class="container">
+            <b-jumbotron header="Ihre Konten">
+                <b-table striped dark hover :data="this.data" :columns="this.columns"></b-table>
+            </b-jumbotron>
         </div>
     </div>
 </template>
@@ -20,8 +17,49 @@
         name: 'secure',
         data() {
             return {
-                user: [],
-                columns: [
+                konto: [],
+                columns: [],
+                data: []
+            }
+        },
+        methods: {
+            async getGridData() {
+                this.konto = await fetch("http://localhost:8000/getKontoById", {
+                    method: "POST",
+                    url: "http://localhost:8000",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: localStorage.getItem('userId'),
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+
+                    throw new Error('Network response was not ok.');
+                }).then(data => {
+                    return Object.values(data);
+                }).catch(error => {
+                    this.konto = [];
+                });
+
+                this.konto.forEach(item => {
+                    this.data.push({
+                        'Guthaben': item.guthaben,
+                        'Beschreibung': item.beschreibung,
+                        'IBAN': item.iban,
+                        'Inahber': item.inhaber,
+                        'Kreditkarte': item.kreditkarte,
+                        'GültigBis': item.gueltigBis,
+                        'Aktiv': item.aktiv
+                    });
+                });
+            },
+            getGridColumns() {
+                this.columns = [
                     {
                         field: 'Guthaben',
                         label: 'Guthaben',
@@ -43,95 +81,19 @@
                         label: 'Kreditkarte',
                     },
                     {
-                        field: 'Gültig Bis',
-                        label: 'Gültig Bis',
+                        field: 'GültigBis',
+                        label: 'GültigBis',
                     },
                     {
                         field: 'Aktiv',
                         label: 'Aktiv',
                     }
-                ],
-                data: [
-                    {
-                        'Guthaben': 'Jesse',
-                        'Beschreibung': 'Simmons',
-                        'IBAN': '2016-10-15 13:43:27',
-                        'Inahber': 'Male',
-                        'Kreditkarte': 'Male',
-                        'Gueltig Bis': 'Male',
-                        'Aktiv': 'Male'
-                    },
-                    {
-                        'Guthaben': 'Jesse',
-                        'Beschreibung': 'Simmons',
-                        'IBAN': '2016-10-15 13:43:27',
-                        'Inahber': 'Male',
-                        'Kreditkarte': 'Male',
-                        'Gueltig Bis': 'Male',
-                        'Aktiv': 'Male'
-                    },
-                    {
-                        'Guthaben': 'Jesse',
-                        'Beschreibung': 'Simmons',
-                        'IBAN': '2016-10-15 13:43:27',
-                        'Inahber': 'Male',
-                        'Kreditkarte': 'Male',
-                        'Gueltig Bis': 'Male',
-                        'Aktiv': 'Male'
-                    },
-                    {
-                        'Guthaben': 'Jesse',
-                        'Beschreibung': 'Simmons',
-                        'IBAN': '2016-10-15 13:43:27',
-                        'Inahber': 'Male',
-                        'Kreditkarte': 'Male',
-                        'Gueltig Bis': 'Male',
-                        'Aktiv': 'Male'
-                    },
-                    {
-                        'Guthaben': 'Jesse',
-                        'Beschreibung': 'Simmons',
-                        'IBAN': '2016-10-15 13:43:27',
-                        'Inahber': 'Male',
-                        'Kreditkarte': 'Male',
-                        'Gueltig Bis': 'Male',
-                        'Aktiv': 'Male'
-                    }
-                ]
+                ];
             }
         },
-        methods: {
-            async getGridData() {
-                this.konto = await fetch("http://localhost:8000/getKontoByUser", {
-                    method: "GET",
-                    url: "http://localhost:8000",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: this.user.id,
-                    })
-                }).then(response => {
-                    if (response.ok) {
-                        return response.json()
-                    }
-
-                    throw new Error('Network response was not ok.');
-                }).then(data => {
-                    return JSON.stringify(data);
-                }).catch(error => {
-                    this.konto = [];
-                });
-
-                if (this.konto) {
-
-                }
-                return [];
-            },
-            getGridColumns() {
-                return [];
-            }
+        beforeMount() {
+            this.getGridData();
+            this.getGridColumns();
         }
     }
 </script>

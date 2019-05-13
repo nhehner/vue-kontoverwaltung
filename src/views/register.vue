@@ -21,7 +21,7 @@
                            placeholder="Benutzername">
                     <input type="text" id="password" name="password" v-model="input.password" class="sixth"
                            placeholder="Passwort">
-                    <input type="text" id="email" name="email" v-model="input.email" class="seventh"
+                    <input type="email" id="email" name="email" v-model="input.email" class="seventh"
                            placeholder="Email Adresse">
                     <input type="button" class="fourth" v-on:click="registerUser()" value="Registrieren">
                 </form>
@@ -56,6 +56,7 @@
         methods: {
             async registerUser() {
                 if (this.input.firstname !== "" && this.input.lastname !== "" && this.input.birthday !== "" && this.input.username !== "" && this.input.password !== "" && this.input.email !== "") {
+                    this.user = [];
                     this.user = await fetch("http://localhost:8000/register", {
                         method: "POST",
                         url: "http://localhost:8000",
@@ -85,7 +86,9 @@
 
                     if (this.user) {
                         this.$emit("authenticated", true);
-                        this.$router.replace({name: "home"});
+                        localStorage.clear();
+                        localStorage.setItem('userId', this.user);
+                        this.$router.replace({name: "secure"});
                     } else {
                         this.flash('Something went wrong please try again', 'warning', {
                             timeout: 3000

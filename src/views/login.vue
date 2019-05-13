@@ -44,6 +44,7 @@
         methods: {
             async login() {
                 if (this.input.username !== "" && this.input.password !== "") {
+                    this.user = [];
                     this.user = await fetch("http://localhost:8000/login", {
                         method: "POST",
                         url: "http://localhost:8000",
@@ -68,8 +69,11 @@
                     });
 
                     if (this.user) {
+                        console.log(this.user);
                         this.$emit("authenticated", true);
-                        this.$router.replace({name: "home"});
+                        localStorage.clear();
+                        localStorage.setItem('userId', this.user);
+                        this.$router.replace({name: "secure"});
                     } else {
                         this.flash('The username and / or password is incorrect', 'warning', {
                             timeout: 3000

@@ -32,6 +32,7 @@
                 this.authenticated = status;
             },
             logout() {
+                localStorage.clear();
                 this.authenticated = false;
             }
         }
@@ -150,7 +151,7 @@
         transform: scale(0.95);
     }
 
-    input[type=text], input[type=password], input[type=date] {
+    input[type=text], input[type=password], input[type=date], input[type=email] {
         background-color: #f6f6f6;
         border: none;
         color: #0d0d0d;
