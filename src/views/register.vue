@@ -1,9 +1,5 @@
 <template>
     <div id="registration">
-        <div id="flashMessage">
-            <flash-message></flash-message>
-        </div>
-
         <div class="wrapper">
             <div id="formContent">
                 <!-- Tabs Titles -->
@@ -36,8 +32,6 @@
 </template>
 
 <script>
-    require('vue-flash-message/dist/vue-flash-message.min.css');
-
     export default {
         name: 'registration',
         data() {
@@ -56,6 +50,10 @@
         methods: {
             async registerUser() {
                 if (this.input.firstname !== "" && this.input.lastname !== "" && this.input.birthday !== "" && this.input.username !== "" && this.input.password !== "" && this.input.email !== "") {
+                    const loadingComponent = this.$loading.open({
+                        container: null
+                    });
+
                     this.user = [];
                     this.user = await fetch("http://localhost:8000/register", {
                         method: "POST",
@@ -89,14 +87,28 @@
                         localStorage.clear();
                         localStorage.setItem('userId', this.user);
                         this.$router.replace({name: "secure"});
+
+                        this.$toast.open({
+                            duration: 4500,
+                            message: `Successfully logged in`,
+                            position: 'is-top-right',
+                            type: 'is-success'
+                        });
                     } else {
-                        this.flash('Something went wrong please try again', 'warning', {
-                            timeout: 3000
+                        this.$toast.open({
+                            duration: 4500,
+                            message: `Something went wrong please try again`,
+                            position: 'is-top-right',
+                            type: 'is-warning'
                         });
                     }
+                    loadingComponent.close();
                 } else {
-                    this.flash('A firstname, lastname, birthday, username, password and email must be present', 'error', {
-                        timeout: 3000
+                    this.$toast.open({
+                        duration: 4500,
+                        message: `A firstname, lastname, birthday, username, password and email must be present`,
+                        position: 'is-top-right',
+                        type: 'is-danger'
                     });
                 }
             }

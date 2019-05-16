@@ -1,9 +1,5 @@
 <template>
     <div id="login">
-        <div id="flashMessage">
-            <flash-message></flash-message>
-        </div>
-
         <div class="wrapper">
             <div id="formContent">
                 <!-- Tabs Titles -->
@@ -15,7 +11,7 @@
                            placeholder="Benutzername">
                     <input type="password" id="password" name="password" v-model="input.password" class="third"
                            placeholder="Passwort">
-                    <input type="button" class="fourth" v-on:click="login()" value="Login">
+                    <input type="button" id="button" class="fourth" v-on:click="login()" value="Login">
                 </form>
 
                 <!-- Register -->
@@ -28,8 +24,6 @@
 </template>
 
 <script>
-    require('vue-flash-message/dist/vue-flash-message.min.css');
-
     export default {
         name: 'Login',
         data() {
@@ -38,50 +32,70 @@
                     username: "",
                     password: ""
                 },
-                user: []
+                user: [],
+                isLoading: false,
+                isFullPage: true
             }
         },
         methods: {
             async login() {
                 if (this.input.username !== "" && this.input.password !== "") {
-                    this.user = [];
-                    this.user = await fetch("http://localhost:8000/login", {
-                        method: "POST",
-                        url: "http://localhost:8000",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            username: this.input.username,
-                            password: this.input.password
-                        })
-                    }).then(response => {
-                        if (response.ok) {
-                            return response.json()
-                        }
-
-                        throw new Error('Network response was not ok.');
-                    }).then(data => {
-                        return JSON.stringify(data);
-                    }).catch(error => {
-                        this.user = [];
+                    const loadingComponent = this.$loading.open({
+                        container: null
                     });
 
+                    this.user = '';
+                    this.user = await
+                        fetch("http://localhost:8000/login", {
+                            method: "POST",
+                            url: "http://localhost:8000",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                username: this.input.username,
+                                password: this.input.password
+                            })
+                        }).then(response => {
+                            if (response.ok) {
+                                return response.json()
+                            }
+
+                            throw new Error('Network response was not ok.');
+                        }).then(data => {
+                            return JSON.stringify(data);
+                        }).catch(error => {
+                            this.user = [];
+                        });
+
                     if (this.user) {
-                        console.log(this.user);
                         this.$emit("authenticated", true);
                         localStorage.clear();
                         localStorage.setItem('userId', this.user);
                         this.$router.replace({name: "secure"});
+
+                        this.$toast.open({
+                            duration: 4500,
+                            message: `Successfully logged in`,
+                            position: 'is-top-right',
+                            type: 'is-success'
+                        });
                     } else {
-                        this.flash('The username and / or password is incorrect', 'warning', {
-                            timeout: 3000
+                        this.$toast.open({
+                            duration: 4500,
+                            message: `The username and / or password is incorrect`,
+                            position: 'is-top-right',
+                            type: 'is-warning'
                         });
                     }
+                    loadingComponent.close();
                 } else {
-                    this.flash('A username and password must be present', 'error', {
-                        timeout: 3000
+                    this.$toast.open({
+                        duration: 4500,
+                        message: `A username and password must be present`,
+                        position: 'is-top-right',
+                        type: 'is-danger'
                     });
                 }
             }
