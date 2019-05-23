@@ -24,8 +24,13 @@
 <script>
     const ModalForm = {
         props: ['beschreibung', 'iban', 'bic', 'inhaber', 'kreditkarte', 'gueltigBis'],
+        data() {
+            return {
+                formProps: [],
+            }
+        },
         template: `
-            <form @submit="createNewKonto">
+            <form>
                 <div class="modal-card">
                     <header class="modal-card-head">
                         <p class="modal-card-title">Neues Konto erstellen</p>
@@ -34,7 +39,7 @@
                         <b-field label="Beschreibung">
                             <b-input
                                 type="text"
-                                :value="beschreibung"
+                                :value="formProps.beschreibung"
                                 placeholder="Beschreibung"
                                 required>
                             </b-input>
@@ -43,7 +48,7 @@
                         <b-field label="IBAN">
                             <b-input
                                 type="text"
-                                :value="iban"
+                                :value="formProps.iban"
                                 placeholder="IBAN"
                                 required>
                             </b-input>
@@ -52,7 +57,7 @@
                         <b-field label="BIC">
                             <b-input
                                 type="text"
-                                :value="bic"
+                                :value="formProps.bic"
                                 placeholder="BIC"
                                 required>
                             </b-input>
@@ -61,7 +66,7 @@
                         <b-field label="Inhaber">
                             <b-input
                                 type="text"
-                                :value="inhaber"
+                                :value="formProps.inhaber"
                                 placeholder="Inhaber"
                                 required>
                             </b-input>
@@ -70,7 +75,7 @@
                         <b-field label="Kreditkarte">
                             <b-input
                                 type="text"
-                                :value="kreditkarte"
+                                :value="formProps.kreditkarte"
                                 placeholder="Kreditkarte"
                                 required>
                             </b-input>
@@ -79,18 +84,74 @@
                         <b-field label="Gültig Bis">
                             <b-input
                                 type="text"
-                                :value="gueltigBis"
+                                :value="formProps.gueltigBis"
                                 placeholder="Gültig Bis"
                                 required>
                             </b-input>
                         </b-field>
                     </section>
                     <footer class="modal-card-foot">
-                        <button class="button is-primary">Neues Konto anlegen</input>
+                        <button class="button is-primary" @click="createNewKonto">Neues Konto anlegen</button>
                     </footer>
                 </div>
             </form>
-        `
+        `,
+        methods: {
+            async createNewKonto() {
+                const loadingComponent = this.$loading.open({
+                    container: true
+                });
+                this.isLoading = true;
+
+                this.konto = await fetch("http://localhost:8000/createKonto", {
+                    method: "POST",
+                    url: "http://localhost:8000",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: localStorage.getItem('userId'),
+                        beschreibung: this.formProps.beschreibung,
+                        iban: this.formProps.iban,
+                        bic: this.formProps.bic,
+                        inhaber: this.formProps.inhaber,
+                        kreditkarte: this.formProps.kreditkarte,
+                        gueltigBis: this.formProps.gueltigBis
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+
+                    throw new Error('Network response was not ok.');
+                }).then(data => {
+                    return Object.values(data);
+                }).catch(error => {
+                    this.konto = [];
+                });
+
+                if (this.konto) {
+                    this.$toast.open({
+                        duration: 4500,
+                        message: `Successfully logged in`,
+                        position: 'is-top-right',
+                        type: 'is-success'
+                    });
+
+                    this.$parent.close();
+                } else {
+                    this.$toast.open({
+                        duration: 4500,
+                        message: `Something went wrong please try again`,
+                        position: 'is-top-right',
+                        type: 'is-danger'
+                    });
+                }
+                loadingComponent.close();
+                this.isLoading = false;
+            }
+        }
     };
 
     export default {
@@ -101,7 +162,7 @@
                 columns: [],
                 data: [],
                 isComponentModalActive: false,
-                formProps: [],
+                    formProps: [],
                 isLoading: false
             }
         },
@@ -189,61 +250,6 @@
                     component: ModalForm,
                     hasModalCard: false
                 })
-            },
-            async createNewKonto() {
-                const loadingComponent = this.$loading.open({
-                    container: true
-                });
-                this.isLoading = true;
-
-                this.konto = await fetch("http://localhost:8000/createKonto", {
-                    method: "POST",
-                    url: "http://localhost:8000",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: localStorage.getItem('userId'),
-                        beschreibung: this.formProps.beschreibung,
-                        iban: this.formProps.iban,
-                        bic: this.formProps.bic,
-                        inhaber: this.formProps.inhaber,
-                        kreditkarte: this.formProps.kreditkarte,
-                        gueltigBis: this.formProps.gueltigBis
-                    })
-                }).then(response => {
-                    if (response.ok) {
-                        return response.json()
-                    }
-
-                    throw new Error('Network response was not ok.');
-                }).then(data => {
-                    return Object.values(data);
-                }).catch(error => {
-                    this.konto = [];
-                });
-
-                if (this.konto) {
-                    this.$toast.open({
-                        duration: 4500,
-                        message: `Successfully logged in`,
-                        position: 'is-top-right',
-                        type: 'is-success'
-                    });
-
-                    this.getGridData();
-                    this.$parent.close();
-                } else {
-                    this.$toast.open({
-                        duration: 4500,
-                        message: `Something went wrong please try again`,
-                        position: 'is-top-right',
-                        type: 'is-danger'
-                    });
-                }
-                loadingComponent.close();
-                this.isLoading = false;
             }
         },
         beforeMount() {

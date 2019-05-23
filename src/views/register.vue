@@ -94,14 +94,14 @@
                             position: 'is-top-right',
                             type: 'is-success'
                         });
-                    } else {
-                        this.$toast.open({
-                            duration: 4500,
-                            message: `Something went wrong please try again`,
-                            position: 'is-top-right',
-                            type: 'is-warning'
-                        });
-                    }
+                        } else {
+                            this.$toast.open({
+                                duration: 4500,
+                                message: `Something went wrong please try again`,
+                                position: 'is-top-right',
+                                type: 'is-warning'
+                            });
+                        }
                     loadingComponent.close();
                 } else {
                     this.$toast.open({
