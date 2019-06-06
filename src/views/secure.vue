@@ -26,7 +26,14 @@
         props: ['beschreibung', 'iban', 'bic', 'inhaber', 'kreditkarte', 'gueltigBis'],
         data() {
             return {
-                formProps: [],
+                input: {
+                    beschreibung: '',
+                    iban: '',
+                    bic: '',
+                    inhaber: '',
+                    kreditkarte: '',
+                    gueltigBis: ''
+                },
             }
         },
         template: `
@@ -39,7 +46,7 @@
                         <b-field label="Beschreibung">
                             <b-input
                                 type="text"
-                                :value="formProps.beschreibung"
+                                v-model="input.beschreibung"
                                 placeholder="Beschreibung"
                                 required>
                             </b-input>
@@ -48,7 +55,7 @@
                         <b-field label="IBAN">
                             <b-input
                                 type="text"
-                                :value="formProps.iban"
+                                v-model="input.iban"
                                 placeholder="IBAN"
                                 required>
                             </b-input>
@@ -57,7 +64,7 @@
                         <b-field label="BIC">
                             <b-input
                                 type="text"
-                                :value="formProps.bic"
+                                v-model="input.bic"
                                 placeholder="BIC"
                                 required>
                             </b-input>
@@ -66,7 +73,7 @@
                         <b-field label="Inhaber">
                             <b-input
                                 type="text"
-                                :value="formProps.inhaber"
+                                v-model="input.inhaber"
                                 placeholder="Inhaber"
                                 required>
                             </b-input>
@@ -75,7 +82,7 @@
                         <b-field label="Kreditkarte">
                             <b-input
                                 type="text"
-                                :value="formProps.kreditkarte"
+                                v-model="input.kreditkarte"
                                 placeholder="Kreditkarte"
                                 required>
                             </b-input>
@@ -84,8 +91,8 @@
                         <b-field label="Gültig Bis">
                             <b-input
                                 type="text"
-                                :value="formProps.gueltigBis"
-                                placeholder="Gültig Bis"
+                                v-model="input.gueltigBis"
+                                placeholder="YYYY-mm-dd"
                                 required>
                             </b-input>
                         </b-field>
@@ -112,12 +119,12 @@
                     },
                     body: JSON.stringify({
                         userId: localStorage.getItem('userId'),
-                        beschreibung: this.formProps.beschreibung,
-                        iban: this.formProps.iban,
-                        bic: this.formProps.bic,
-                        inhaber: this.formProps.inhaber,
-                        kreditkarte: this.formProps.kreditkarte,
-                        gueltigBis: this.formProps.gueltigBis
+                        beschreibung: this.input.beschreibung,
+                        iban: this.input.iban,
+                        bic: this.input.bic,
+                        inhaber: this.input.inhaber,
+                        kreditkarte: this.input.kreditkarte,
+                        gueltigBis: this.input.gueltigBis
                     })
                 }).then(response => {
                     if (response.ok) {
@@ -162,7 +169,6 @@
                 columns: [],
                 data: [],
                 isComponentModalActive: false,
-                    formProps: [],
                 isLoading: false
             }
         },
