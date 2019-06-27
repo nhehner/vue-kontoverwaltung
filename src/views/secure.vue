@@ -18,7 +18,7 @@
 
                     <button class="button is-primary is-medium" style="margin-right: 10px;"
                             @click="newTransactionModal()">
-                        Neue Transaction durchführen
+                        Neue Transaktion durchführen
                     </button>
 
                     <button class="button is-light is-medium" style="margin-right: 10px;" @click="addClickListener()">
@@ -32,6 +32,7 @@
 
 <script>
     import BTableColumn from "buefy/src/components/table/TableColumn";
+    import BFormSelect from "buefy/src/components/select/Select";
 
     export default {
         name: 'secure',
@@ -84,7 +85,7 @@
                             'Guthaben': item.guthaben + ' €',
                             'Beschreibung': item.beschreibung,
                             'IBAN': item.iban,
-                            'Inahber': item.inhaber,
+                            'Inhaber': item.inhaber,
                             'Kreditkarte': item.kreditkarte,
                             'GültigBis': item.gueltigBis,
                             'Aktiv': item.aktiv
@@ -118,8 +119,8 @@
                         label: 'IBAN',
                     },
                     {
-                        field: 'Inahber',
-                        label: 'Inahber',
+                        field: 'Inhaber',
+                        label: 'Inhaber',
                     },
                     {
                         field: 'Kreditkarte',
@@ -144,7 +145,7 @@
                     }
 
                     value.addEventListener('click', () => {
-                        localStorage.removeItem('element');
+                        localStorage.removeItem('kontoId');
                         localStorage.setItem('kontoId', currentId);
 
                         this.$modal.open({
@@ -331,23 +332,28 @@
                     payment: '',
                     add_infos: ''
                 },
-                isLoading: false
+                optionsKonto: [],
+                optionsPayment: [],
+                isLoading: false,
             }
         },
+        components: {BFormSelect},
         template: `
             <form>
                 <div class="modal-card" style="width: auto">
                     <header class="modal-card-head">
-                        <p class="modal-card-title">Neue Transaction durchführen</p>
+                        <p class="modal-card-title">Neue Transaktion durchführen</p>
                     </header>
                     <section class="modal-card-body">
                         <b-field label="Konto">
-                            <b-input
-                                type="text"
-                                v-model="input.kontoId"
-                                placeholder="eigene KontoId"
-                                required>
-                            </b-input>
+                            <b-select v-model="input.kontoId">
+                                <option
+                                    v-for="option in optionsKonto"
+                                    :value="option.id"
+                                    :key="option.id">
+                                {{ option.text }}
+                                </option>
+                            </b-select>
                         </b-field>
 
                         <b-field label="Ziel Iban">
@@ -381,7 +387,7 @@
                             <b-input
                                 type="text"
                                 v-model="input.betrag"
-                                placeholder="+/- 0.00"
+                                placeholder="0.00"
                                 required>
                             </b-input>
                         </b-field>
@@ -396,16 +402,19 @@
                         </b-field>
 
                         <b-field label="Payment Provider">
-                            <b-input
-                                type="text"
-                                v-model="input.payment"
-                                placeholder="Zahl von 1-5"
-                                required>
-                            </b-input>
+                        <b-select v-model="input.payment">
+                                <option
+                                    v-for="option in optionsPayment"
+                                    :value="option.id"
+                                    :key="option.id">
+                                {{ option.text }}
+                                </option>
+                            </b-select>
                         </b-field>
                     </section>
+
                     <footer class="modal-card-foot">
-                        <button class="button is-primary" @click="createNewTransaction">Neue Transaction anlegen</button>
+                        <button class="button is-primary" @click="createNewTransaction">Neue Transaktion anlegen</button>
                     </footer>
                 </div>
             </form>
@@ -471,7 +480,89 @@
                     component: kontoInformationModal,
                     hasModalCard: false
                 })
-            }
+            },
+            async getKontos() {
+                const loadingComponent = this.$loading.open({
+                    container: true
+                });
+                this.isLoading = true;
+
+                this.konto = [];
+                this.kontos = await fetch("http://localhost:8000/getKontoById", {
+                    method: "POST",
+                    url: "http://localhost:8000",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: localStorage.getItem('userId'),
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+
+                    throw new Error('Network response was not ok.');
+                }).then(data => {
+                    return Object.values(data);
+                }).catch(error => {
+                    this.kontos = [];
+                });
+
+                if (this.kontos) {
+                    this.optionsKonto = [];
+
+                    this.kontos.forEach(item => {
+                        this.optionsKonto.push({value: item.id, text: item.beschreibung});
+                    });
+                }
+                loadingComponent.close();;
+                this.isLoading = false;
+            },
+            async getPayments() {
+                const loadingComponent = this.$loading.open({
+                    container: true
+                });
+                this.isLoading = true;
+
+                this.konto = [];
+                this.payments = await fetch("http://localhost:8000/getPayments", {
+                    method: "POST",
+                    url: "http://localhost:8000",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: localStorage.getItem('userId'),
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+
+                    throw new Error('Network response was not ok.');
+                }).then(data => {
+                    return Object.values(data);
+                }).catch(error => {
+                    this.kontos = [];
+                });
+
+                if (this.payments) {
+                    this.optionsPayment =[];
+
+                    this.payments.forEach(item => {
+                        this.optionsPayment.push({value: item.id, text: item.beschreibung});
+                    });
+                }
+                loadingComponent.close();
+                this.isLoading = false;
+            },
+        },
+        beforeMount() {
+            this.getKontos();
+            this.getPayments();
         }
     };
 
@@ -480,14 +571,15 @@
             return {
                 columns: [],
                 data: [],
-                isLoading: false
+                isLoading: false,
+                kontoId: ''
             }
         },
         components: {BTableColumn},
         template: `
                 <div class="modal-card" style="width: auto">
                     <header class="modal-card-head">
-                        <p class="modal-card-title">Konto Auszug</p>
+                        <p class="modal-card-title">Kontoauszug von Konto: {{ kontoId }}</p>
                     </header>
                     <section class="modal-card-body">
                         <b-table striped hover :data="this.data" :columns="this.columns"></b-table>
@@ -510,7 +602,7 @@
                     },
                     body: JSON.stringify({
                         userId: localStorage.getItem('userId'),
-                        kontoId: localStorage.getItem('kontoId')
+                        kontoId: this.kontoId
                     })
                 }).then(response => {
                     if (response.ok) {
@@ -533,7 +625,7 @@
                             'ziel_iban': item.zielIban,
                             'ziel_bic': item.zielBic,
                             'ziel_inhaber': item.zielInhaber,
-                            'betrag': item.betrag,
+                            'betrag': '-' + item.betrag,
                             'add_infos': item.addInfos,
                             'payment': item.payment,
                         });
@@ -586,6 +678,8 @@
             },
         },
         beforeMount() {
+            this.kontoId = localStorage.getItem('kontoId');
+
             this.getKontoInformationGridData();
             this.getKontoInformationGridColumns();
         }
